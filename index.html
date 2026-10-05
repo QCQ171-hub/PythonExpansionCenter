@@ -1532,7 +1532,7 @@ actionsEl.innerHTML = `
 📂 在 GitHub 查看
 </a>
 <button class="btn btn-secondary btn-sm" onclick="downloadExtension('${id}')">
-⬇️ 下载
+⬇️ 下载源码
 </button>
 `;
 // Load README
@@ -1595,26 +1595,27 @@ showToast('代码已复制到剪贴板', 'success');
 }
 
 async function downloadExtension(id) {
-showToast('正在准备下载...', 'info');
+showToast('正在准备下载 Python 源码...', 'info');
 const baseUrl = `${CONFIG.RAW_BASE}/${id}`;
-const files = [`${id}.py`, `${id}.json`, 'README.md'];
-for (const file of files) {
+// Modified: Only download the .py source file
+const pyFile = `${id}.py`;
 try {
-const response = await fetch(`${baseUrl}/${file}`);
+const response = await fetch(`${baseUrl}/${pyFile}`);
 if (response.ok) {
 const blob = await response.blob();
 const a = document.createElement('a');
 a.href = URL.createObjectURL(blob);
-a.download = file;
+a.download = pyFile;
 a.click();
 URL.revokeObjectURL(a.href);
-await new Promise(r => setTimeout(r, 500));
+showToast('源码下载完成！', 'success');
+} else {
+showToast('下载失败: 找不到源码文件', 'error');
 }
 } catch (e) {
-console.warn(`Failed to download ${file}`);
+console.warn(`Failed to download ${pyFile}`, e);
+showToast('下载出错: ' + e.message, 'error');
 }
-}
-showToast('下载完成！', 'success');
 }
 
 // ============================================
