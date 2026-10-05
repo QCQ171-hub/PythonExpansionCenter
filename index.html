@@ -421,11 +421,13 @@ overflow: hidden;
 flex-shrink: 0;
 background: var(--bg-card);
 border: 1px solid var(--border-color);
+position: relative;
 }
 .detail-cover img {
 width: 100%;
 height: 100%;
 object-fit: cover;
+display: block;
 }
 .detail-info {
 flex: 1;
@@ -1505,11 +1507,35 @@ state.currentCode = '';
 // Render header
 document.getElementById('detail-title').textContent = meta.name || id;
 document.getElementById('detail-desc').textContent = meta.description || '';
+
+// FIX START: Safe image handling without destroying DOM elements
+const coverContainer = document.getElementById('detail-cover');
 const coverImg = document.getElementById('detail-cover-img');
+
+// Reset container state (remove any previous placeholders)
+coverContainer.innerHTML = ''; 
+coverContainer.appendChild(coverImg); // Re-append the original img tag
+coverImg.style.display = 'block';     // Ensure it is visible
+coverImg.src = '';                    // Clear old src to prevent flicker
+coverImg.alt = meta.name || 'cover';
+
+// Set new source
 coverImg.src = `${CONFIG.RAW_BASE}/${id}/${id}.png`;
+
+// Handle error safely
 coverImg.onerror = () => {
-document.getElementById('detail-cover').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;opacity:0.3;">⚡</div>';
+    coverImg.style.display = 'none';
+    // Only add placeholder if it doesn't exist
+    if (!coverContainer.querySelector('.placeholder-icon')) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'placeholder-icon';
+        placeholder.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;opacity:0.3;';
+        placeholder.textContent = '⚡';
+        coverContainer.appendChild(placeholder);
+    }
 };
+// FIX END
+
 // Render meta grid
 const metaGrid = document.getElementById('detail-meta');
 const metaItems = [];
